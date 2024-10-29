@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>행복도 측정</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #chartContainer {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center;">당신은 얼마나 행복하십니까?</h1>
+    <input type="range" id="happinessRange" min="0" max="10" step="1" value="5">
+    <button onclick="submitHappiness()">제출</button>
+
+    <div id="chartContainer">
+        <canvas id="happinessChart"></canvas>
+    </div>
+
+    <script>
+        let happinessScores = JSON.parse(localStorage.getItem('happinessScores')) || [];
+
+        function submitHappiness() {
+            const score = parseInt(document.getElementById("happinessRange").value);
+            happinessScores.push(score);
+            localStorage.setItem('happinessScores', JSON.stringify(happinessScores));
+
+            const averageHappiness = happinessScores.reduce((a, b) => a + b, 0) / happinessScores.length;
+
+            updateChart(averageHappiness);
+        }
+
+        const ctx = document.getElementById('happinessChart').getContext('2d');
+        let happinessChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['당신의 평균 행복도', '덴마크의 행복지수'],
+                datasets: [{
+                    label: '행복도',
+                    data: [0, 7.63],
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '행복도'
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateChart(averageHappiness) {
+            happinessChart.data.datasets[0].data[0] = averageHappiness;
+            happinessChart.update();
+        }
+
+        // 페이지 로드 시 평균 행복도 계산
+        if (happinessScores.length > 0) {
+            const averageHappiness = happinessScores.reduce((a, b) => a + b, 0) / happinessScores.length;
+            updateChart(averageHappiness);
+        }
+
+    </script>
+
+</body>
+</html>
